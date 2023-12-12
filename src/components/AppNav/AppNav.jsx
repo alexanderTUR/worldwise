@@ -6,12 +6,18 @@ export const AppNav = () => {
     <nav className={styles.nav}>
       <ul>
         <li>
-          <NavLink to='cities' activeClassName={styles.active}>
+          <NavLink
+            to='cities'
+            className={({ isActive }) => (isActive ? styles.active : '')}
+          >
             Cities
           </NavLink>
         </li>
         <li>
-          <NavLink to='countries' activeClassName={styles.active}>
+          <NavLink
+            to='countries'
+            className={({ isActive }) => (isActive ? styles.active : '')}
+          >
             Countries
           </NavLink>
         </li>
