@@ -1,8 +1,7 @@
 import 'leaflet/dist/leaflet.css';
 import styles from './Map.module.css';
 import { useEffect, useState } from 'react';
-import { useCities } from '../../contexts/CitiesContext.jsx';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   MapContainer,
   Marker,
@@ -11,20 +10,23 @@ import {
   useMap,
   useMapEvents,
 } from 'react-leaflet';
+import { useCities } from '../../contexts/CitiesContext.jsx';
 import { useGeolocation } from '../../hooks/useGeolocation.js';
+import { useUrlPosition } from '../../hooks/useUrlPosition.js';
+
 import { Button } from '../Button/Button.jsx';
+
+import { DEFAULT_LOCATION } from '../../constants.js';
 
 export const Map = () => {
   const { cities } = useCities();
-  const [mapPosition, setMapPosition] = useState([40, 0]);
-  const [searchParams] = useSearchParams();
+  const [mapPosition, setMapPosition] = useState(DEFAULT_LOCATION);
   const {
     isLoading: isLoadingPosition,
     position: geoPosition,
     getPosition,
   } = useGeolocation();
-  const mapLat = searchParams.get('lat');
-  const mapLng = searchParams.get('lng');
+  const [mapLat, mapLng] = useUrlPosition();
 
   useEffect(() => {
     if (mapLat && mapLng) setMapPosition([mapLat, mapLng]);
@@ -80,7 +82,7 @@ const DetectClick = () => {
 
   useMapEvents({
     click: (e) => {
-      navigate(`form?lat${e.latlng.lat}&lng=${e.latlng.lng}`);
+      navigate(`form?lat=${e.latlng.lat}&lng=${e.latlng.lng}`);
     },
   });
 };

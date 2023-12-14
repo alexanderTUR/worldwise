@@ -34,12 +34,31 @@ export const CitiesProvider = ({ children }) => {
     }
   };
 
+  const createCity = async (newCity) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${BASE_URL}/cities/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newCity),
+      });
+      const city = await response.json();
+      setCities((cities) => [...cities, city]);
+    } catch (error) {
+      alert('Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchCities();
   }, []);
   return (
     <CitiesContext.Provider
-      value={{ cities, isLoading, currentCity, fetchCity }}
+      value={{ cities, isLoading, currentCity, fetchCity, createCity }}
     >
       {children}
     </CitiesContext.Provider>
