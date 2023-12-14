@@ -3,14 +3,17 @@ import styles from './CountryList.module.css';
 import { Spinner } from '../Spinner/Spinner.jsx';
 import { Message } from '../Message/Message.jsx';
 import { CountryItem } from '../CountryItem/CountryItem.jsx';
+import { useCities } from '../../contexts/CitiesContext.jsx';
 
-export const CountryList = ({ cities, isLoading }) => {
-  if (isLoading) {
-    return <Spinner />;
-  }
+export const CountryList = () => {
+  const { cities, isLoading } = useCities();
+
+  if (isLoading) return <Spinner />;
+
   if (!cities.length) {
     return <Message message='Add your first city plase!' />;
   }
+
   const countries = cities.reduce((acc, city) => {
     if (!acc.map((item) => item.country).includes(city.country)) {
       return [
