@@ -1,42 +1,98 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useReducer } from 'react';
 import { BASE_URL } from '../constants';
 
 const CitiesContext = createContext();
 
+const initialState = {
+  cities: [],
+  isLoading: false,
+  currentCity: {},
+  error: null,
+};
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'LOADING':
+      return {
+        ...state,
+        isLoading: true,
+      };
+    case 'FETCH_CITIES':
+      return {
+        ...state,
+        cities: action.payload,
+        isLoading: false,
+      };
+    case 'FETCH_CITY':
+      return {
+        ...state,
+        currentCity: action.payload,
+        isLoading: false,
+      };
+    case 'CREATE_CITY':
+      return {
+        ...state,
+        cities: [...state.cities, action.payload],
+        isLoading: false,
+        currentCity: action.payload,
+      };
+    case 'DELETE_CITY':
+      return {
+        ...state,
+        cities: state.cities.filter((city) => city.id !== action.payload),
+        isLoading: false,
+        currentCity: {},
+      };
+    case 'REJECT':
+      return {
+        ...state,
+        error: action.payload,
+        isLoading: false,
+      };
+    default:
+      throw new Error(`Unsupported action type ${action.type}`);
+  }
+};
+
 export const CitiesProvider = ({ children }) => {
-  const [cities, setCities] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentCity, setCurrentCity] = useState({});
+  const [{ cities, currentCity, isLoading, error }, dispatch] = useReducer(
+    reducer,
+    initialState,
+  );
 
   const fetchCities = async () => {
+    dispatch({ type: 'LOADING' });
     try {
-      setIsLoading(true);
       const response = await fetch(`${BASE_URL}/cities`);
       const cities = await response.json();
-      setCities(cities);
+      dispatch({ type: 'FETCH_CITIES', payload: cities });
     } catch (error) {
-      alert('Something went wrong');
-    } finally {
-      setIsLoading(false);
+      dispatch({
+        type: 'REJECT',
+        payload: 'Something went wrong with fetching cities',
+      });
     }
   };
 
   const fetchCity = async (id) => {
+    if (Number(id) === currentCity.id) return;
+
+    dispatch({ type: 'LOADING' });
     try {
-      setIsLoading(true);
       const response = await fetch(`${BASE_URL}/cities/${id}`);
       const cities = await response.json();
-      setCurrentCity(cities);
+      dispatch({ type: 'FETCH_CITY', payload: cities });
     } catch (error) {
-      alert('Something went wrong with fetching city');
-    } finally {
-      setIsLoading(false);
+      dispatch({
+        type: 'REJECT',
+        payload: 'Something went wrong with fetching city',
+      });
     }
   };
 
   const createCity = async (newCity) => {
+    dispatch({ type: 'LOADING' });
     try {
-      setIsLoading(true);
       const response = await fetch(`${BASE_URL}/cities/`, {
         method: 'POST',
         headers: {
@@ -45,25 +101,27 @@ export const CitiesProvider = ({ children }) => {
         body: JSON.stringify(newCity),
       });
       const city = await response.json();
-      setCities((cities) => [...cities, city]);
+      dispatch({ type: 'CREATE_CITY', payload: city });
     } catch (error) {
-      alert('Something went wrong with creating city');
-    } finally {
-      setIsLoading(false);
+      dispatch({
+        type: 'REJECT',
+        payload: 'Something went wrong with creating city',
+      });
     }
   };
 
   const deleteCity = async (id) => {
+    dispatch({ type: 'LOADING' });
     try {
-      setIsLoading(true);
       await fetch(`${BASE_URL}/cities/${id}`, {
         method: 'DELETE',
       });
-      setCities((cities) => cities.filter((city) => city.id !== id));
+      dispatch({ type: 'DELETE_CITY', payload: id });
     } catch (error) {
-      alert('Something went wrong with deleting city');
-    } finally {
-      setIsLoading(false);
+      dispatch({
+        type: 'REJECT',
+        payload: 'Something went wrong with deleting city',
+      });
     }
   };
 
@@ -74,8 +132,9 @@ export const CitiesProvider = ({ children }) => {
     <CitiesContext.Provider
       value={{
         cities,
-        isLoading,
         currentCity,
+        isLoading,
+        error,
         fetchCity,
         createCity,
         deleteCity,
