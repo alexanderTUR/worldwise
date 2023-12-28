@@ -1,6 +1,6 @@
 import styles from './SpinnerFullPage.module.css';
 
-import Spinner from '../Spinner/Spinner.jsx';
+import { Spinner } from '../Spinner/Spinner.jsx';
 
 export const SpinnerFullPage = () => {
   return (

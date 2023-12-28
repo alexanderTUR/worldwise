@@ -19,7 +19,7 @@ export const City = () => {
 
   useEffect(() => {
     fetchCity(id);
-  }, [id]);
+  }, [id, fetchCity]);
 
   const { cityName, emoji, date, notes } = currentCity;
 
